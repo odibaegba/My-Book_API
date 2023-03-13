@@ -1,6 +1,6 @@
 ﻿namespace MyBooks.Data.Models
 {
-	public class Book_Author
+	public class Book_Author //join model
 	{
 
 		public int Id { get; set; }

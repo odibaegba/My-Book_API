@@ -1,6 +1,11 @@
 ﻿using MyBooks.Data.Models;
+using MyBooks.Data.Paging;
 using MyBooks.Data.ViewModels;
+using MyBooks.Exceptions;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace MyBooks.Data.Services
 {
@@ -12,16 +17,52 @@ namespace MyBooks.Data.Services
 			_context = context;
 		}
 
-		public void AddPublisher(PublisherVM publisher)
+		public List<Publisher> GetAllPublishers(string sortBy, string searchString, int? pageNumber)
 		{
+			var allPublishers = _context.Publishers.OrderBy(n => n.Name).ToList();
+
+
+			if (!string.IsNullOrEmpty(sortBy))
+			{
+				switch (sortBy)
+				{
+					case "name_desc":
+						allPublishers = allPublishers.OrderByDescending(n => n.Name).ToList();
+						break;
+					default:
+						break;
+				}
+			}
+
+			if (!string.IsNullOrEmpty(searchString))
+			{
+				allPublishers = allPublishers.Where(n => n.Name.Contains(searchString, StringComparison.CurrentCultureIgnoreCase)).ToList();
+			}
+
+			//Pagination
+			int pageSize = 6;
+			allPublishers = PaginatedList<Publisher>.Create(allPublishers.AsQueryable(), pageNumber ?? 1, pageSize);
+
+			return allPublishers;
+
+
+		}
+
+
+		public Publisher AddPublisher(PublisherVM publisher)
+		{
+			if (StringStartWithNumber(publisher.Name)) throw new PublisherNameException("Name starts with number", publisher.Name);
+
 			var _publisher = new Publisher()
 			{
 				Name = publisher.Name,
 			};
 			_context.Publishers.Add(_publisher);
 			_context.SaveChanges();
+			return _publisher;
 		}
 
+		public Publisher GetPublisherById(int id) => _context.Publishers.FirstOrDefault(n => n.Id == id);
 		public PublisherWithBooksAndAuthorsVM GetPublisherData(int publisherId)
 		{
 			var _publisherData = _context.Publishers.Where(n => n.Id == publisherId)
@@ -45,6 +86,18 @@ namespace MyBooks.Data.Services
 				_context.Publishers.Remove(_publisher);
 				_context.SaveChanges();
 			}
+			else
+			{
+				throw new Exception($"The publisher with id {id} does not exist");
+			}
 		}
+
+		private bool StringStartWithNumber(string name) => (Regex.IsMatch(name, @"^\d"));
+
+
+		/*{
+	if(Regex.IsMatch(name, @"^\d")) return true;
+	return false;
+}*/
 	}
 }

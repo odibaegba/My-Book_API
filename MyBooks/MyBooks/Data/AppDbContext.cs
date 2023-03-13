@@ -9,7 +9,7 @@ namespace MyBooks.Data
 		{
 
 		}
-		//using fluent API to configure the many to many relationship
+		//using fluent API to configure the many to many relationship in order for entity frame work to be able to map it 
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -22,11 +22,15 @@ namespace MyBooks.Data
 				.HasOne(b => b.Author)
 				.WithMany(ba => ba.Book_Authors)
 				.HasForeignKey(bi => bi.AuthorId);
+
+			modelBuilder.Entity<Log>().HasKey(n => n.Id);
 		}
 
 		public DbSet<Book> Books { get; set; }
 		public DbSet<Author> Authors { get; set; }
 		public DbSet<Book_Author> Book_Authors { get; set; }
 		public DbSet<Publisher> Publishers { get; set; }
+
+		public DbSet<Log> Logs { get; set; }
 	}
 }

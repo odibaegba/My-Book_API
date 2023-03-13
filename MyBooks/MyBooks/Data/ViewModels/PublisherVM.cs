@@ -9,7 +9,7 @@ namespace MyBooks.Data.ViewModels
 
 	public class PublisherWithBooksAndAuthorsVM
 	{
-		public string Name { get; set; }
+		public string Name { get; set; } //name of publisher
 		public List<BookAuthorVM> BookAuthors { get; set; }
 
 	}
